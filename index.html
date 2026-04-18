@@ -70,11 +70,17 @@
     color: var(--muted);
     font-weight: 600;
   }
-  .card svg.car {
+  .card svg.car,
+  .card img.car {
     width: 92%;
     height: 72%;
     display: block;
+    object-fit: contain;
+    -webkit-user-drag: none;
+    pointer-events: none;
   }
+  .card img.car { filter: drop-shadow(0 6px 12px rgba(0,0,0,0.45)); }
+  .card svg.fallback { display: none; }
   .count {
     position: absolute;
     inset: 0;
@@ -178,7 +184,8 @@
   <div class="app">
     <div class="card tesla" data-car="tesla" role="button" aria-label="Tesla">
       <span class="label">Tesla</span>
-      <svg class="car" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <img class="car" src="/images/tesla.png" alt="" onerror="this.nextElementSibling.style.display='block'; this.remove();" />
+      <svg class="car fallback" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
           <linearGradient id="tBody" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#ff3b5c"/>
@@ -212,7 +219,8 @@
 
     <div class="card corvette" data-car="corvette" role="button" aria-label="Corvette">
       <span class="label">Corvette</span>
-      <svg class="car" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <img class="car" src="/images/corvette.png" alt="" onerror="this.nextElementSibling.style.display='block'; this.remove();" />
+      <svg class="car fallback" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
           <linearGradient id="cBody" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#ffd84d"/>
@@ -248,7 +256,8 @@
 
     <div class="card mustang" data-car="mustang" role="button" aria-label="Mustang">
       <span class="label">Mustang</span>
-      <svg class="car" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <img class="car" src="/images/mustang.png" alt="" onerror="this.nextElementSibling.style.display='block'; this.remove();" />
+      <svg class="car fallback" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
           <linearGradient id="mBody" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#3b82f6"/>
