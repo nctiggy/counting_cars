@@ -109,10 +109,9 @@
     opacity: 0.55;
     pointer-events: none;
   }
-  .reset-dot {
+  .dot {
     position: absolute;
     bottom: 8px;
-    right: 8px;
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -125,6 +124,9 @@
     transition: opacity 120ms ease-out, transform 120ms ease-out;
     box-shadow: 0 1px 3px rgba(0,0,0,0.45);
   }
+  .minus-dot { left: 8px; }
+  .reset-dot { right: 8px; }
+  .minus-dot:active { opacity: 1; transform: scale(0.88); }
   .reset-dot.arming {
     opacity: 1;
     transform: scale(2.2);
@@ -167,7 +169,8 @@
         <rect x="355" y="108" width="14" height="6" rx="2" fill="#ffe7a8"/>
       </svg>
       <div class="count" data-count="tesla">0</div>
-      <button class="reset-dot" data-reset="tesla" type="button" aria-label="Hold to reset Tesla"></button>
+      <button class="dot minus-dot" data-minus="tesla" type="button" aria-label="Subtract one Tesla"></button>
+      <button class="dot reset-dot" data-reset="tesla" type="button" aria-label="Hold to reset Tesla"></button>
     </div>
 
     <div class="card corvette" data-car="corvette" role="button" aria-label="Corvette">
@@ -205,7 +208,8 @@
         <rect x="30" y="122" width="10" height="4" rx="1" fill="#ff5555"/>
       </svg>
       <div class="count" data-count="corvette">0</div>
-      <button class="reset-dot" data-reset="corvette" type="button" aria-label="Hold to reset Corvette"></button>
+      <button class="dot minus-dot" data-minus="corvette" type="button" aria-label="Subtract one Corvette"></button>
+      <button class="dot reset-dot" data-reset="corvette" type="button" aria-label="Hold to reset Corvette"></button>
     </div>
 
     <div class="card mustang" data-car="mustang" role="button" aria-label="Mustang">
@@ -246,7 +250,8 @@
         <path d="M50,118 L80,118 L80,122 L50,122 Z" fill="#0b1224" opacity="0.5"/>
       </svg>
       <div class="count" data-count="mustang">0</div>
-      <button class="reset-dot" data-reset="mustang" type="button" aria-label="Hold to reset Mustang"></button>
+      <button class="dot minus-dot" data-minus="mustang" type="button" aria-label="Subtract one Mustang"></button>
+      <button class="dot reset-dot" data-reset="mustang" type="button" aria-label="Hold to reset Mustang"></button>
     </div>
   </div>
 
@@ -311,6 +316,18 @@
   document.querySelectorAll(".card").forEach(function (card) {
     var car = card.getAttribute("data-car");
     card.addEventListener("click", function () { bump(car); });
+  });
+
+  document.querySelectorAll(".minus-dot").forEach(function (dot) {
+    var car = dot.getAttribute("data-minus");
+    dot.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if ((state[car] | 0) > 0) {
+        state[car] = (state[car] | 0) - 1;
+        saveState(state);
+        render();
+      }
+    });
   });
 
   var HOLD_MS = 700;
