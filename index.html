@@ -16,7 +16,6 @@
     --tesla: #e11d48;
     --corvette: #f5c518;
     --mustang: #2563eb;
-    --danger: #ef4444;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -110,74 +109,27 @@
     opacity: 0.55;
     pointer-events: none;
   }
-  .reset {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom) + 10px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 8px 14px;
-    background: rgba(20, 24, 29, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: var(--ink);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    z-index: 5;
+  .reset-dot {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--accent);
+    opacity: 0.55;
+    z-index: 4;
+    cursor: pointer;
+    transition: opacity 120ms ease-out, transform 120ms ease-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.45);
   }
-  .reset:active { transform: translateX(-50%) scale(0.96); }
-
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    padding: 16px;
+  .reset-dot.arming {
+    opacity: 1;
+    transform: scale(2.2);
+    transition: opacity 120ms ease-out, transform 700ms linear;
   }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: var(--panel);
-    border-radius: 16px;
-    padding: 18px;
-    max-width: 360px;
-    width: 100%;
-    border: 1px solid rgba(255,255,255,0.08);
-    text-align: center;
-  }
-  .modal h2 {
-    margin: 0 0 6px;
-    font-size: 18px;
-  }
-  .modal p {
-    margin: 0 0 14px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-  .modal .row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-  }
-  .btn {
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: #1f2530;
-    color: var(--ink);
-    font-weight: 600;
-    font-size: 14px;
-    min-width: 110px;
-  }
-  .btn.danger {
-    background: var(--danger);
-    border-color: var(--danger);
-  }
-  .btn:active { transform: scale(0.97); }
 </style>
 </head>
 <body>
@@ -215,6 +167,7 @@
         <rect x="355" y="108" width="14" height="6" rx="2" fill="#ffe7a8"/>
       </svg>
       <div class="count" data-count="tesla">0</div>
+      <button class="reset-dot" data-reset="tesla" type="button" aria-label="Hold to reset Tesla"></button>
     </div>
 
     <div class="card corvette" data-car="corvette" role="button" aria-label="Corvette">
@@ -252,6 +205,7 @@
         <rect x="30" y="122" width="10" height="4" rx="1" fill="#ff5555"/>
       </svg>
       <div class="count" data-count="corvette">0</div>
+      <button class="reset-dot" data-reset="corvette" type="button" aria-label="Hold to reset Corvette"></button>
     </div>
 
     <div class="card mustang" data-car="mustang" role="button" aria-label="Mustang">
@@ -292,19 +246,7 @@
         <path d="M50,118 L80,118 L80,122 L50,122 Z" fill="#0b1224" opacity="0.5"/>
       </svg>
       <div class="count" data-count="mustang">0</div>
-    </div>
-  </div>
-
-  <button class="reset" id="resetBtn" type="button">Reset</button>
-
-  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true">
-    <div class="modal">
-      <h2>Reset all counts?</h2>
-      <p>This will set Tesla, Corvette, and Mustang back to 0.</p>
-      <div class="row">
-        <button class="btn" id="cancelBtn" type="button">Cancel</button>
-        <button class="btn danger" id="confirmBtn" type="button">Reset</button>
-      </div>
+      <button class="reset-dot" data-reset="mustang" type="button" aria-label="Hold to reset Mustang"></button>
     </div>
   </div>
 
@@ -371,21 +313,35 @@
     card.addEventListener("click", function () { bump(car); });
   });
 
-  var modal = document.getElementById("modal");
-  document.getElementById("resetBtn").addEventListener("click", function () {
-    modal.classList.add("show");
-  });
-  document.getElementById("cancelBtn").addEventListener("click", function () {
-    modal.classList.remove("show");
-  });
-  document.getElementById("confirmBtn").addEventListener("click", function () {
-    state = { tesla: 0, corvette: 0, mustang: 0 };
-    saveState(state);
-    render();
-    modal.classList.remove("show");
-  });
-  modal.addEventListener("click", function (e) {
-    if (e.target === modal) modal.classList.remove("show");
+  var HOLD_MS = 700;
+  document.querySelectorAll(".reset-dot").forEach(function (dot) {
+    var car = dot.getAttribute("data-reset");
+    var timer = null;
+
+    function arm(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (timer) clearTimeout(timer);
+      dot.classList.add("arming");
+      timer = setTimeout(function () {
+        timer = null;
+        dot.classList.remove("arming");
+        state[car] = 0;
+        saveState(state);
+        render();
+      }, HOLD_MS);
+    }
+    function disarm(e) {
+      if (e) e.stopPropagation();
+      if (timer) { clearTimeout(timer); timer = null; }
+      dot.classList.remove("arming");
+    }
+
+    dot.addEventListener("pointerdown", arm);
+    dot.addEventListener("pointerup", disarm);
+    dot.addEventListener("pointerleave", disarm);
+    dot.addEventListener("pointercancel", disarm);
+    dot.addEventListener("click", function (e) { e.stopPropagation(); });
   });
 
   render();
